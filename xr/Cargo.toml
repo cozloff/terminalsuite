@@ -1,0 +1,43 @@
+[package]
+name = "xr"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+openxr = "0.21.1"
+
+[target.'cfg(target_os = "android")'.dependencies]
+ndk-context = "0.1"
+ndk-glue = "0.7"
+
+[package.metadata.android]
+package = "com.terminalsuite.xr"
+apk_name = "TerminalSuiteXR"
+build_targets = ["aarch64-linux-android"]
+
+[package.metadata.android.sdk]
+min_sdk_version = 29
+target_sdk_version = 35
+
+[package.metadata.android.application]
+label = "TerminalSuite XR"
+theme = "@android:style/Theme.Black.NoTitleBar.Fullscreen"
+debuggable = true
+
+[package.metadata.android.application.activity]
+theme = "@android:style/Theme.Black.NoTitleBar.Fullscreen"
+config_changes = "density|keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode"
+launch_mode = "singleTask"
+orientation = "landscape"
+resizeable_activity = false
+exported = true
+
+[[package.metadata.android.application.activity.intent_filter]]
+actions = ["android.intent.action.MAIN"]
+categories = [
+    "com.oculus.intent.category.VR",
+    "android.intent.category.LAUNCHER",
+]
