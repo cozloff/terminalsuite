@@ -1,8 +1,9 @@
 pub mod openapi;
 
+use crate::infra::adapters::input::handlers;
+use axum::response::Redirect;
 use axum::{Router, routing::get};
 use serde_json::json;
-use crate::infra::adapters::input::handlers;
 
 pub fn create_router() -> Router {
     let scalar_configuration = json!({
@@ -10,24 +11,22 @@ pub fn create_router() -> Router {
         "agent": { "disabled": true },
     });
 
-    let api_routes: Router = Router::new().route(
-        "/test", 
-        get(handlers::test_handler));
+    let api_routes: Router =
+        Router::new()
+            .route(
+                "/docs",
+                get(move || {
+                    let scalar_configuration = scalar_configuration.clone();
+                    async move {
+                        scalar_api_reference::axum::scalar_response(&scalar_configuration, None)
+                    }
+                }),
+            )
+            .route("/openapi.json", get(openapi::api_openapi))
+            .route("/test", get(handlers::test_handler))
+            .route("/start_postgres", get(handlers::start_postgres_container));
 
     return Router::new()
-        .route(
-            "/api",
-            get(move || {
-                let scalar_configuration = scalar_configuration.clone();
-                async move {
-                    scalar_api_reference::axum::scalar_response(
-                        &scalar_configuration, None)
-                }
-            }),
-        )
-        .route(
-            "/api/openapi.json", 
-            get(
-                openapi::api_openapi))
+        .route("/api", get(|| async { Redirect::to("/api/docs") }))
         .nest("/api", api_routes);
 }
